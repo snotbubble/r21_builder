@@ -20,6 +20,10 @@ makes:
 - ./ink_data.dat
 - ./pic_data.dat
 - ./arc_data.dat
+- ./pub/txt.html
+- ./pub/ink.html
+- ./pub/pic.html
+- ./pub/arc.html
 
 destroys:
 - any file it makes/copies to pub: ./pub/[section]_*.*
