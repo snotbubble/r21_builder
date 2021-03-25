@@ -88,6 +88,7 @@ txtformpane: compose/deep [
 		tname: field 300x30 40.40.40 font-name "consolas" font-size 10 font-color 180.180.180 bold on-change [ 
 			unless noupdate [
 				noupdate: true
+				replace face/text " " "_"
 				txtnodes/:sidx/name: copy face/text
 			   	txtlist/data/:sidx: rejoin [ pad/left/with to-string sidx 3 #"0" "^-" face/text ]
 				txtspew
@@ -196,7 +197,7 @@ inkformpane: compose/deep [
 		iname: field 40.40.40 300x30 font-name "consolas" font-size 10 font-color 180.180.180 bold on-change [ 
 			unless noupdate [
 				noupdate: true
-				probe inknodes/:sidx
+				replace face/text " " "_"
 				inknodes/:sidx/name: copy face/text
 			   	inklist/data/:sidx: rejoin [ pad/left/with to-string sidx 3 #"0" "^-" face/text ]
 				inkspew
@@ -260,6 +261,7 @@ picformpane: compose/deep [
 		pname: field 300x30 40.40.40 font-name "consolas" font-size 10 font-color 180.180.180 bold on-change [ 
 			unless noupdate [
 				noupdate: true
+				replace face/text " " "_"
 				picnodes/:sidx/name: copy face/text
 			   	piclist/data/:sidx: rejoin [ pad/left/with to-string sidx 3 #"0" "^-" face/text ]
 				noupdate: false
@@ -370,6 +372,7 @@ arcformpane: compose/deep [
 		aname: field 300x30 40.40.40 font-name "consolas" font-size 10 font-color 180.180.180 bold on-change [ 
 			unless noupdate [
 				noupdate: true
+				replace face/text " " "_"
 				arcnodes/:sidx/name: copy face/text
 			   	arclist/data/:sidx: rejoin [ pad/left/with to-string sidx 3 #"0" "^-" face/text ]
 				noupdate: false
@@ -923,31 +926,44 @@ view/tight [
 								make-dir %./pub
 								call/wait "rm ./pub/txt_*.*"
 								foreach n txtnodes [
+									print [ "looking for poster : " n/poster ]
+									if exists? n/poster [
+										print [ "^-found poster : " n/poster ]
+										tsrc: to-string n/poster
+										tdst: to-file rejoin [ "./pub/txt_" pad/left/with to-string n/index 3 #"0" "_" n/name ".png" ]
+										call/wait rejoin [ "cp " tsrc " " tdst ]
+										print [ "^-copied poster to : " tdst ]
+									]
+								    print [ "looking for video : " n/video ]
+									if exists? n/video [
+								    	print [ "^-found video : " n/video ]
+										tsrc: to-string n/video
+										tdst: to-file rejoin [ "./pub/txt_" pad/left/with to-string n/index 3 #"0" "_" n/name ".mp4" ]
+										call/wait rejoin [ "cp " tsrc " " tdst ]
+										print [ "^-copied video to : " tdst ]
+									]
 									ths: copy read %./txt_template.html
 									replace ths "[name]" n/name
-									replace ths "[poster]" rejoin [ "txt_" pad/left/with to-string n/index 3 #"0" "_" n/name ".png" ]
-									replace ths "[video]" rejoin [ "txt_" pad/left/with to-string n/index 3 #"0" "_" n/name ".mp4" ]
+								    vidf: rejoin [ "txt_" pad/left/with to-string n/index 3 #"0" "_" n/name ".mp4" ]
+									posf: rejoin [ "txt_" pad/left/with to-string n/index 3 #"0" "_" n/name ".png" ]
+									print [ "looking for published video : " rejoin [ "./pub/" vidf ] ]
+									either exists? to-file rejoin [ "./pub/" vidf ] [
+										print [ "^-found published video : " rejoin [ "./pub/" vidf ] ]
+										replace ths "[VIDEO]" rejoin [ "<video class=^"vids^" preload=^"none^" poster=^"" posf "^" onclick=^"this.paused ? this.play() : this.pause();^">^/^-^-^-<source src=^"" vidf "^" type=^"video/mp4^">^/^-^-</video>" ]
+									] [ 
+										replace ths "[VIDEO]" rejoin [ "<img class=^"novids^" src=^"" posf "^">" ]
+									]
 									replace ths "[cardlink]" n/cardlink
 									tcrd: copy n/cardtext
 									replace/all tcrd "^/" "<BR>"
 									replace ths "[cardtext]" tcrd
 									bodyhtml: rejoin [ bodyhtml ths ]
-									if exists? n/poster [
-										tsrc: to-string n/poster
-										tdst: to-file rejoin [ "./pub/txt_" pad/left/with to-string n/index 3 #"0" "_" n/name ".png" ]
-										call/wait rejoin [ "cp " tsrc " " tdst ]
-									]
-									if exists? n/video [
-										tsrc: to-string n/video
-										tdst: to-file rejoin [ "./pub/txt_" pad/left/with to-string n/index 3 #"0" "_" n/name ".mp4" ]
-										call/wait rejoin [ "cp " tsrc " " tdst ]
-									]
 								]
-								replace headhtml "[IAMTXT]" "<td class=^"ts^" width=^"30px^">TXT</td>"
-								replace headhtml "[IAMINK]" "<td class=^"tx^" width=^"30px^"><a href=^"ink.html^">INK</a></td>"
-								replace headhtml "[IAMPIC]" "<td class=^"tx^" width=^"30px^"><a href=^"pic.html^">PIC</a></td>"
-								replace headhtml "[IAMARC]" "<td class=^"tx^" width=^"30px^"><a href=^"arc.html^">ARC</a></td>"
-								replace headhtml "[SECTIONTXT]" "<h2>programs & scripts</h2><BR>2007~present"
+								replace headhtml "[IAMTXT]" "<td class=^"ts^" width=^"100px^">TXT</td>"
+								replace headhtml "[IAMINK]" "<td class=^"tx^" width=^"100px^"><a href=^"ink.html^">INK</a></td>"
+								replace headhtml "[IAMPIC]" "<td class=^"tx^" width=^"100px^"><a href=^"pic.html^">PIC</a></td>"
+								replace headhtml "[IAMARC]" "<td class=^"tx^" width=^"100px^"><a href=^"arc.html^">ARC</a></td>"
+								replace headhtml "[SECTIONTXT]" ""
 								pubfile: rejoin [ headhtml bodyhtml foothtml ]
 								write %./pub/txt.html pubfile
 							]
@@ -967,11 +983,11 @@ view/tight [
 										call/wait rejoin [ "cp " isrc " " idst ]
 									]
 								]
-								replace headhtml "[IAMTXT]" "<td class=^"tx^" width=^"30px^"><a href=^"txt.html^">TXT</a></td>"
-								replace headhtml "[IAMINK]" "<td class=^"ts^" width=^"30px^">INK</td>"
-								replace headhtml "[IAMPIC]" "<td class=^"tx^" width=^"30px^"><a href=^"pic.html^">PIC</a></td>"
-								replace headhtml "[IAMARC]" "<td class=^"tx^" width=^"30px^"><a href=^"arc.html^">ARC</a></td>"
-								replace headhtml "[SECTIONTXT]" "<h2>drawings</h2><BR>mostly ball-point pen. 1994~present"
+								replace headhtml "[IAMTXT]" "<td class=^"tx^" width=^"100px^"><a href=^"txt.html^">TXT</a></td>"
+								replace headhtml "[IAMINK]" "<td class=^"ts^" width=^"100px^">INK</td>"
+								replace headhtml "[IAMPIC]" "<td class=^"tx^" width=^"100px^"><a href=^"pic.html^">PIC</a></td>"
+								replace headhtml "[IAMARC]" "<td class=^"tx^" width=^"100px^"><a href=^"arc.html^">ARC</a></td>"
+								replace headhtml "[SECTIONTXT]" ""
 								pubfile: rejoin [ headhtml bodyhtml foothtml ]
 								write %./pub/ink.html pubfile
 							]
@@ -1008,11 +1024,11 @@ view/tight [
 										call/wait rejoin [ "cp " psrc " " pdst ]
 									]
 								]
-								replace headhtml "[IAMTXT]" "<td class=^"tx^" width=^"30px^"><a href=^"txt.html^">TXT</a></td>"
-								replace headhtml "[IAMINK]" "<td class=^"tx^" width=^"30px^"><a href=^"ink.html^">INK</a></td>"
-								replace headhtml "[IAMPIC]" "<td class=^"ts^" width=^"30px^">PIC</td>"
-								replace headhtml "[IAMARC]" "<td class=^"tx^" width=^"30px^"><a href=^"arc.html^">ARC</a></td>"
-								replace headhtml "[SECTIONTXT]" "<h2>webgpu & fragment-shaders</h2><BR>2020~present"
+								replace headhtml "[IAMTXT]" "<td class=^"tx^" width=^"100px^"><a href=^"txt.html^">TXT</a></td>"
+								replace headhtml "[IAMINK]" "<td class=^"tx^" width=^"100px^"><a href=^"ink.html^">INK</a></td>"
+								replace headhtml "[IAMPIC]" "<td class=^"ts^" width=^"100px^">PIC</td>"
+								replace headhtml "[IAMARC]" "<td class=^"tx^" width=^"100px^"><a href=^"arc.html^">ARC</a></td>"
+								replace headhtml "[SECTIONTXT]" ""
 								pubfile: rejoin [ headhtml bodyhtml foothtml ]
 								write %./pub/pic.html pubfile
 							]
@@ -1054,11 +1070,11 @@ view/tight [
 									replace ahs "[credits]" abroke
 									bodyhtml: rejoin [ bodyhtml ahs ]
 								]
-								replace headhtml "[IAMTXT]" "<td class=^"tx^" width=^"30px^"><a href=^"txt.html^">TXT</a></td>"
-								replace headhtml "[IAMINK]" "<td class=^"tx^" width=^"30px^"><a href=^"ink.html^">INK</a></td>"
-								replace headhtml "[IAMPIC]" "<td class=^"tx^" width=^"30px^"><a href=^"pic.html^">PIC</a></td>"
-								replace headhtml "[IAMARC]" "<td class=^"ts^" width=^"30px^">ARC</td>"
-								replace headhtml "[SECTIONTXT]" "<h2>archive of old pre-rendered cg</h2><BR>1996~2018 : student-work, r&d, tvs, film, cinematics, tvc"
+								replace headhtml "[IAMTXT]" "<td class=^"tx^" width=^"100px^"><a href=^"txt.html^">TXT</a></td>"
+								replace headhtml "[IAMINK]" "<td class=^"tx^" width=^"100px^"><a href=^"ink.html^">INK</a></td>"
+								replace headhtml "[IAMPIC]" "<td class=^"tx^" width=^"100px^"><a href=^"pic.html^">PIC</a></td>"
+								replace headhtml "[IAMARC]" "<td class=^"ts^" width=^"100px^">ARC</td>"
+								replace headhtml "[SECTIONTXT]" ""
 								pubfile: rejoin [ headhtml bodyhtml foothtml ]
 								write %./pub/arc.html pubfile
 							]
