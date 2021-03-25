@@ -1,4 +1,8 @@
 # r21_builder
+interface for the 2021 portfolio update
+
+this used to be org-mode + python!
+
 ![screenie](210323_r21_screenie.png)
 
 expects:
